@@ -67,7 +67,8 @@ export default function App() {
 
   return (
     <div>
-      <div style={{ position: 'fixed' }}>
+      <div style={{ position: 'fixed'}}>
+        <button onClick={() => setElements([])}>Clear</button>
         <input
           type="radio"
           name="line"
