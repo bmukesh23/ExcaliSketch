@@ -67,7 +67,7 @@ export default function App() {
 
   return (
     <div>
-      <div style={{ position: 'fixed'}}>
+      <div style={{ position: 'fixed', left: '50%', top: '2%'}}>
         <button onClick={() => setElements([])}>Clear</button>
         <input
           type="radio"
@@ -88,7 +88,7 @@ export default function App() {
         <label htmlFor="rectangle">rectangle</label>
 
       </div>
-      <canvas id="canvas" width={innerWidth} height={innerHeight} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}>Canvas{" "}</canvas>
+      <canvas id="canvas" width={innerWidth} height={innerHeight} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}></canvas>
     </div>
   )
 }
