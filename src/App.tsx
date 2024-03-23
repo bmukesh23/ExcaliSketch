@@ -41,19 +41,19 @@ export default function App() {
 
   const handleMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
     setDrawing(true);
-    const {clientX, clientY} = event;
+    const { clientX, clientY } = event;
     const element = createElement(clientX, clientY, clientX, clientY);
     setElements((prevState) => [...prevState, element]);
   };
 
   const handleMouseMove = (event: MouseEvent<HTMLCanvasElement>) => {
-    if(!drawing){
+    if (!drawing) {
       return;
     }
 
     const index = elements.length - 1;
-    const { clientX, clientY} = event;
-    const { x1, y1} = elements[index];
+    const { clientX, clientY } = event;
+    const { x1, y1 } = elements[index];
     const updateElement = createElement(x1, y1, clientX, clientY);
 
     const elementsCopy = [...elements];
@@ -67,7 +67,7 @@ export default function App() {
 
   return (
     <div>
-      <div style={{ position: 'fixed', left: '50%', top: '2%'}}>
+      <div style={{ position: 'fixed', left: '50%', top: '2%' }}>
         <button onClick={() => setElements([])}>Clear</button>
         <input
           type="radio"
