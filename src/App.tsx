@@ -173,11 +173,15 @@ export default function App() {
 
   useEffect(() => {
     const undoRedoFunction = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key === "z") {
-        if (event.shiftKey) {
+      if (event.ctrlKey || event.metaKey) {
+        if (event.key === "z") {
+          if (event.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+        } else if (event.key === "y") {
           redo();
-        } else {
-          undo();
         }
       }
     };
