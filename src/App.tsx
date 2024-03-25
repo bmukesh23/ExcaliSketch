@@ -1,7 +1,8 @@
-import { MouseEvent, useState, useLayoutEffect } from "react";
+import { MouseEvent, useState, useEffect, useLayoutEffect } from "react";
+import { useHistory } from "./useHistory";
 import rough from 'roughjs';
 
-type ElementType = {
+export type ElementType = {
   id: number,
   x1: number;
   x2: number;
@@ -22,7 +23,7 @@ enum Tools {
 }
 
 export default function App() {
-  const [elements, setElements] = useState<ElementType[]>([]);
+  const { elements, setElements, undo, redo } = useHistory([]);
   const [action, setAction] = useState("none");
   const [tool, setTool] = useState<Tools>(Tools.Line);
   const [selectedElement, setSelectedElement] = useState<ElementType | null>();
@@ -104,10 +105,7 @@ export default function App() {
     return { id, x1, y1, x2, y2, type, roughElement };
   };
 
-  type Point = {
-    x: number;
-    y: number;
-  };
+  type Point = { x: number; y: number; };
 
   const distance = (a: Point, b: Point) =>
     Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
@@ -173,6 +171,25 @@ export default function App() {
     });
   }, [elements]);
 
+  useEffect(() => {
+    const undoRedoFunction = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "z") {
+        if (event.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", undoRedoFunction);
+    return () => {
+      document.removeEventListener("keydown", undoRedoFunction);
+    };
+  }, [undo, redo]);
+
+
+
   const updateElement = (
     id: number,
     x1: number,
@@ -185,7 +202,7 @@ export default function App() {
 
     const elementsCopy = [...elements];
     elementsCopy[id] = updateElement;
-    setElements(elementsCopy);
+    setElements(elementsCopy, true);
   };
 
   const handleMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
@@ -196,6 +213,7 @@ export default function App() {
         const offsetX = clientX - element.x1;
         const offsetY = clientY - element.y1;
         setSelectedElement({ ...element, offsetX, offsetY });
+        setElements((prevState) => prevState);
         if (element.position === "inside") {
           setAction("moving");
         } else {
@@ -247,10 +265,10 @@ export default function App() {
   };
 
   const handleMouseUp = () => {
-    if (action === "drawing" || action === "resizing") {
-      if (selectedElement) {
-        const index = selectedElement.id;
-        const { id, type } = elements[index];
+    if (selectedElement) {
+      const index = selectedElement.id;
+      const { id, type } = elements[index];
+      if (action === "drawing" || action === "resizing") {
         const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index]);
         updateElement(id, x1, y1, x2, y2, type);
       }
@@ -280,6 +298,10 @@ export default function App() {
         />
         <label htmlFor="rectangle">rectangle</label>
 
+        <div style={{ position: "fixed", zIndex: 2, bottom: 0, padding: 10 }}>
+          <button onClick={undo}>Undo</button>
+          <button onClick={redo}>Redo</button>
+        </div>
       </div>
       <canvas id="canvas" width={innerWidth} height={innerHeight} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}></canvas>
     </div>
