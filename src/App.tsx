@@ -187,9 +187,9 @@ export default function App() {
     };
 
     document.addEventListener("keydown", undoRedoFunction);
-    // return () => {
-    //   document.removeEventListener("keydown", undoRedoFunction);
-    // };
+    return () => {
+      document.removeEventListener("keydown", undoRedoFunction);
+    };
   }, [undo, redo]);
 
 
