@@ -4,41 +4,7 @@ import rough from 'roughjs';
 import { useHistory } from "./hooks/useHistory";
 import { usePressedKeys } from "./hooks/usePressedKeys";
 
-type SelectedElementType = ElementType & {
-  xOffsets?: number[];
-  yOffsets?: number[];
-  offsetX?: number;
-  offsetY?: number;
-};
-
-interface ExtendedElementType extends ElementType {
-  xOffsets?: number[];
-  yOffsets?: number[];
-}
-
-export type ElementType = {
-  id: number,
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
-  type: Tools;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  roughElement?: any;
-  offsetX?: number;
-  offsetY?: number;
-  position?: string | null;
-  points?: { x: number; y: number }[];
-  text?: string;
-}
-
-enum Tools {
-  Pencil = "pencil",
-  Selection = "selection",
-  Line = "line",
-  Text = "text",
-  Rectangle = "rectangle",
-}
+import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./types";
 
 export default function App() {
   const { elements, setElements, undo, redo } = useHistory([]);
