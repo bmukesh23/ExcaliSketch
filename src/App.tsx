@@ -1,4 +1,4 @@
-import { MouseEvent, useState, useEffect, useLayoutEffect } from "react";
+import { MouseEvent, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useHistory } from "./useHistory";
 import { getStroke } from "perfect-freehand";
 import rough from 'roughjs';
@@ -23,27 +23,31 @@ export type ElementType = {
   y2: number;
   type: Tools;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  roughElement: any;
+  roughElement?: any;
   offsetX?: number;
   offsetY?: number;
   position?: string | null;
   points?: { x: number; y: number }[];
+  text?: string;
 }
 
 enum Tools {
   Pencil = "pencil",
   Selection = "selection",
   Line = "line",
+  Text = "text",
   Rectangle = "rectangle",
 }
 
 export default function App() {
   const { elements, setElements, undo, redo } = useHistory([]);
   const [action, setAction] = useState("none");
-  const [tool, setTool] = useState<Tools>(Tools.Line);
+  const [tool, setTool] = useState<Tools>(Tools.Text);
   const [selectedElement, setSelectedElement] = useState<ElementType | null>();
 
   const generator = rough.generator();
+
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   const cursorForPosition = (position: string) => {
     switch (position) {
@@ -138,6 +142,8 @@ export default function App() {
           roughElement: defaultRoughElement,
         };
       }
+      case Tools.Text:
+        return { id, type, x1, y1, x2, y2, text: "" };
       default:
         throw new Error(`Type not recognised: ${type}`);
     }
@@ -197,6 +203,8 @@ export default function App() {
         });
         return betweenAnyPoint ? "inside" : null;
       }
+      case Tools.Text:
+        return x >= x1 && x <= x2 && y >= y1 && y <= y2 ? "inside" : null;
       default:
         throw new Error(`Type not recognised: ${type}`);
     }
@@ -281,6 +289,13 @@ export default function App() {
         context.fill(new Path2D(stroke));
         break;
       }
+      case "text": {
+        context.textBaseline = "top";
+        context.font = "24px sans-serif";
+        const text = element.text || "";
+        context.fillText(text, element.x1, element.y1);
+        break;
+      }
       default:
         throw new Error(`Type not recognised: ${element.type}`);
     }
@@ -293,8 +308,11 @@ export default function App() {
 
     const roughCanvas = rough.canvas(canvas);
 
-    elements.forEach((element) => drawElement(roughCanvas, context, element));
-  }, [elements]);
+    elements.forEach((element) => {
+      if (action === "writing" && selectedElement && selectedElement.id === element.id) return;
+      drawElement(roughCanvas, context, element);
+    });
+  }, [elements, action, selectedElement]);
 
   useEffect(() => {
     const undoRedoFunction = (event: KeyboardEvent) => {
@@ -317,7 +335,15 @@ export default function App() {
     };
   }, [undo, redo]);
 
-
+  useEffect(() => {
+    const textArea = textAreaRef.current;
+    if (action === "writing" && textArea && selectedElement) {
+      setTimeout(() => {
+        textArea.focus();
+        textArea.value = selectedElement.text || "";
+      }, 0);
+    }
+  }, [action, selectedElement]);
 
   const updateElement = (
     id: number,
@@ -325,7 +351,8 @@ export default function App() {
     y1: number,
     x2: number,
     y2: number,
-    type: Tools
+    type: Tools,
+    options?: { text: string }
   ) => {
     const elementsCopy = [...elements];
     switch (type) {
@@ -339,6 +366,26 @@ export default function App() {
         elementsCopy[id].points = [...existingPoints, { x: x2, y: y2 }];
         break;
       }
+      case Tools.Text: {
+        const canvas = document.getElementById("canvas");
+        if (!(canvas instanceof HTMLCanvasElement)) {
+          throw new Error("Canvas element not found");
+        }
+        const context = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("Could not get 2D context from canvas");
+        }
+        if (!options) {
+          throw new Error("No text options provided for text tool");
+        }
+        const textWidth = context.measureText(options.text).width;
+        const textHeight = 24;
+        elementsCopy[id] = {
+          ...createElement(id, x1, y1, x1 + textWidth, y1 + textHeight, type),
+          text: options.text,
+        };
+        break;
+      }
       default:
         throw new Error(`Type not recognised: ${type}`);
     }
@@ -348,6 +395,7 @@ export default function App() {
   const adjustmentRequired = (type: Tools) => ["line", "rectangle"].includes(type);
 
   const handleMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
+    if (action === "writing") return;
     const { clientX, clientY } = event;
     if (tool === Tools.Selection) {
       const element = getElementAtPosition(clientX, clientY, elements);
@@ -377,7 +425,7 @@ export default function App() {
       const newElement = createElement(id, clientX, clientY, clientX, clientY, tool);
       setElements((prevState) => [...prevState, newElement]);
       setSelectedElement(newElement);
-      setAction("drawing");
+      setAction(tool === "text" ? "writing" : "drawing");
     }
   };
 
@@ -415,11 +463,11 @@ export default function App() {
         const safeOffsetY = offsetY ?? 0;
         const newX1 = clientX - safeOffsetX;
         const newY1 = clientY - safeOffsetY;
-        // 🫐 Calculate the new position for x2 and y2 based on the original size
         const newX2 = newX1 + (x2 - x1);
         const newY2 = newY1 + (y2 - y1);
 
-        updateElement(id, newX1, newY1, newX2, newY2, type);
+        const options = type === "text" && selectedElement.text ? { text: selectedElement.text } : undefined;
+        updateElement(id, newX1, newY1, newX2, newY2, type, options);
       }
     } else if (action === "resizing" && selectedElement && selectedElement.position) {
       const { id, type, position, ...coordinates } =
@@ -432,7 +480,8 @@ export default function App() {
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (event: MouseEvent<HTMLCanvasElement>) => {
+    const { clientX, clientY } = event;
     if (selectedElement) {
       const index = selectedElement.id;
       const { id, type } = elements[index];
@@ -440,9 +489,37 @@ export default function App() {
         const { x1, y1, x2, y2 } = adjustElementCoordinates(elements[index]);
         updateElement(id, x1, y1, x2, y2, type);
       }
+      const offsetX = selectedElement.offsetX || 0;
+      const offsetY = selectedElement.offsetY || 0;
+
+      if (
+        selectedElement.type === "text" &&
+        clientX - offsetX === selectedElement.x1 &&
+        clientY - offsetY === selectedElement.y1
+      ) {
+        setAction("writing");
+        return;
+      }
     }
+    if (action === "writing") return;
     setAction("none");
-  }
+    setSelectedElement(null);
+  };
+
+  const handleBlur = (event: React.FocusEvent<HTMLTextAreaElement>) => {
+    if (selectedElement) {
+      const { id, x1, y1, type } = selectedElement;
+
+      const x2 = selectedElement.x2 || x1;
+      const y2 = selectedElement.y2 || y1;
+
+      setAction("none");
+      setSelectedElement(null);
+      updateElement(id, x1, y1, x2, y2, type, { text: event.target.value });
+    } else {
+      console.error("No element selected when handleBlur was called");
+    }
+  };
 
   return (
     <div>
@@ -485,11 +562,36 @@ export default function App() {
         />
         <label htmlFor="pencil">pencil</label>
 
+        <input
+          type="radio"
+          name="text"
+          id="text"
+          checked={tool === Tools.Text}
+          onChange={() => setTool(Tools.Text)}
+        />
+        <label htmlFor="text">text</label>
       </div>
       <div style={{ position: "fixed", zIndex: 2, bottom: 0, padding: 10 }}>
         <button onClick={undo}>Undo</button>
         <button onClick={redo}>Redo</button>
       </div>
+      {action === "writing" ? (
+        <textarea ref={textAreaRef} name="text" id="text" style={{
+          position: "fixed", top: selectedElement && selectedElement.y1 !== undefined ? `${selectedElement.y1 - 2}px` : "0",
+          left: selectedElement && selectedElement.x1 !== undefined ? `${selectedElement.x1}px` : "0",
+          font: "24px sans-serif",
+          margin: 0,
+          padding: 0,
+          border: 0,
+          outline: "none",
+          overflow: "hidden",
+          whiteSpace: "pre",
+          background: "transparent",
+          zIndex: 2,
+        }}
+          onBlur={handleBlur}
+        />
+      ) : null}
       <canvas id="canvas" width={innerWidth} height={innerHeight} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove}></canvas>
     </div>
   )
