@@ -4,6 +4,7 @@ import { useHistory } from "./hooks/useHistory";
 import { usePressedKeys } from "./hooks/usePressedKeys";
 import { cursorForPosition, createElement, getElementAtPosition, resizedCoordinates, adjustElementCoordinates, drawElement, adjustmentRequired, } from "./library/utilities";
 import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./library/types";
+import { ActionBar, ControlPanel } from "./components";
 
 export default function App() {
   const { elements, setElements, undo, redo } = useHistory([]);
@@ -305,82 +306,24 @@ export default function App() {
 
   return (
     <div>
-      <div style={{ position: 'fixed', zIndex: 2 }}>
-        <button onClick={() => setElements([])}>Clear</button>
-
-        <input
-          type="radio"
-          id="selection"
-          checked={tool === "selection"}
-          onChange={() => setTool(Tools.Selection)}
-        />
-        <label htmlFor="selection">Selection</label>
-
-        <input
-          type="radio"
-          name="line"
-          id="line"
-          checked={tool === "line"}
-          onChange={() => setTool(Tools.Line)}
-        />
-        <label htmlFor="line">Line</label>
-
-        <input
-          type="radio"
-          name="rectangle"
-          id="rectangle"
-          checked={tool === "rectangle"}
-          onChange={() => setTool(Tools.Rectangle)}
-        />
-        <label htmlFor="rectangle">Rectangle</label>
-
-        <input
-          type="radio"
-          name="pencil"
-          id="pencil"
-          checked={tool === "pencil"}
-          onChange={() => setTool(Tools.Pencil)}
-        />
-        <label htmlFor="pencil">Pencil</label>
-
-        <input
-          type="radio"
-          name="text"
-          id="text"
-          checked={tool === "text"}
-          onChange={() => setTool(Tools.Text)}
-        />
-        <label htmlFor="text">Text</label>
-      </div>
-      <div style={{ position: "fixed", zIndex: 2, bottom: 0, padding: 10 }}>
-        <button onClick={undo}>Undo</button>
-        <button onClick={redo}>Redo</button>
-
-        <button onClick={() => onZoom(-0.1)}>-</button>
-        <span onClick={() => setScale(1)}>
-          {new Intl.NumberFormat("en-GB", { style: "percent" }).format(scale)}
-        </span>
-        <button onClick={() => onZoom(0.1)}>+</button>
-      </div>
+      <ActionBar tool={tool} setTool={setTool} />
+      <ControlPanel
+        undo={undo}
+        redo={redo}
+        onZoom={onZoom}
+        scale={scale}
+        setScale={setScale}
+      />
 
       {action === "writing" ? (
-        <textarea ref={textAreaRef} onBlur={handleBlur} style={{
-          position: "fixed",
+        <textarea ref={textAreaRef} onBlur={handleBlur} className="textArea" style={{
           top: selectedElement ? (selectedElement.y1 - 2) * scale + panOffset.y * scale - scaleOffset.y : 0,
           left: selectedElement ? selectedElement.x1 * scale + panOffset.x * scale - scaleOffset.x : 0,
           font: `${24 * scale}px sans-serif`,
-          margin: 0,
-          padding: 0,
-          border: 0,
-          outline: 0,
-          overflow: "hidden",
-          whiteSpace: "pre",
-          background: "transparent",
-          zIndex: 2,
         }}
         />
       ) : null}
-      <canvas id="canvas" width={innerWidth} height={innerHeight} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} style={{ position: "absolute", zIndex: 1 }}></canvas>
+      <canvas id="canvas" width={innerWidth} height={innerHeight} onMouseDown={handleMouseDown} onMouseUp={handleMouseUp} onMouseMove={handleMouseMove} style={{ position: "absolute", zIndex: 1 }} />
     </div>
   )
 }
