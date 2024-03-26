@@ -4,7 +4,7 @@ import rough from 'roughjs';
 import { useHistory } from "./hooks/useHistory";
 import { usePressedKeys } from "./hooks/usePressedKeys";
 
-import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./types";
+import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./library/types";
 
 export default function App() {
   const { elements, setElements, undo, redo } = useHistory([]);
