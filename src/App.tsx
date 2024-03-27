@@ -2,16 +2,17 @@ import { MouseEvent, useState, useEffect, useLayoutEffect, useRef } from "react"
 import rough from 'roughjs';
 import { useHistory } from "./hooks/useHistory";
 import { usePressedKeys } from "./hooks/usePressedKeys";
-import { cursorForPosition, createElement, getElementAtPosition, resizedCoordinates, adjustElementCoordinates, drawElement, adjustmentRequired, } from "./library/utilities";
-import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./types";
+import { adjustElementCoordinates, adjustmentRequired, createElement, cursorForPosition, drawElement, getElementAtPosition, resizedCoordinates } from "./utilities";
+import { ToolsType, Tools, SelectedElementType, ExtendedElementType, ElementType } from "./types";
 import { ActionBar, ControlPanel } from "./components";
 
 export default function App() {
+  const initialTool: ToolsType = Tools.selection;
   const { elements, setElements, undo, redo } = useHistory([]);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [startPanMousePosition, setStartPanMousePosition] = useState({ x: 0, y: 0, });
   const [action, setAction] = useState("none");
-  const [tool, setTool] = useState<Tools>(Tools.Selection);
+  const [tool, setTool] = useState<ToolsType>(initialTool);
   const [selectedElement, setSelectedElement] = useState<ElementType | null>();
   const [scale, setScale] = useState(1);
   const [scaleOffset, setScaleOffset] = useState({ x: 0, y: 0 });
@@ -99,22 +100,22 @@ export default function App() {
     y1: number,
     x2: number,
     y2: number,
-    type: Tools,
+    type: ToolsType,
     options?: { text: string }
   ) => {
     const elementsCopy = [...elements];
     switch (type) {
-      case Tools.Line:
-      case Tools.Rectangle: {
+      case Tools.line:
+      case Tools.rectangle: {
         elementsCopy[id] = createElement(id, x1, y1, x2, y2, type);
         break;
       }
-      case Tools.Pencil: {
+      case Tools.pencil: {
         const existingPoints = elementsCopy[id].points || [];
         elementsCopy[id].points = [...existingPoints, { x: x2, y: y2 }];
         break;
       }
-      case Tools.Text: {
+      case Tools.text: {
         const canvas = document.getElementById("canvas");
         if (!(canvas instanceof HTMLCanvasElement)) {
           throw new Error("Canvas element not found");
@@ -158,7 +159,7 @@ export default function App() {
       return;
     }
 
-    if (tool === Tools.Selection) {
+    if (tool === Tools.selection) {
       const element = getElementAtPosition(clientX, clientY, elements);
       if (element) {
         let selectedElement: SelectedElementType = { ...element };
@@ -202,7 +203,7 @@ export default function App() {
       return;
     }
 
-    if (tool === Tools.Selection) {
+    if (tool === Tools.selection) {
       const element = getElementAtPosition(clientX, clientY, elements);
 
       if (element && element.position) {

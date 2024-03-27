@@ -16,7 +16,7 @@ export type ElementType = {
     y1: number;
     x2: number;
     y2: number;
-    type: Tools;
+    type: ToolsType;
     // TODO: add type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     roughElement?: any;
@@ -28,11 +28,11 @@ export type ElementType = {
 };
 
 export enum Tools {
-    Selection = "selection",
-    Rectangle = "rectangle",
-    Line = "line",
-    Pencil = "pencil",
-    Text = "text",
+    selection = "selection",
+    rectangle = "rectangle",
+    line = "line",
+    pencil = "pencil",
+    text = "text",
 }
-
+export type ToolsType = (typeof Tools)[keyof typeof Tools];
 export type Point = { x: number; y: number };
