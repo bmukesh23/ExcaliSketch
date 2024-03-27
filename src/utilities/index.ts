@@ -5,4 +5,4 @@ export * from "./cursor-for-position";
 export * from "./draw-element";
 export * from "./get-element-at-position";
 export * from "./near-point.test.ts/near-point";
-export * from "./resized-coordinates";
+export * from "./resized-coordinates/resized-coordinates";
