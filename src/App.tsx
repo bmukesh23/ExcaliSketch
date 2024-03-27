@@ -3,7 +3,7 @@ import rough from 'roughjs';
 import { useHistory } from "./hooks/useHistory";
 import { usePressedKeys } from "./hooks/usePressedKeys";
 import { adjustElementCoordinates, adjustmentRequired, createElement, cursorForPosition, drawElement, getElementAtPosition, resizedCoordinates } from "./utilities";
-import { ToolsType, Tools, SelectedElementType, ExtendedElementType, ElementType } from "./types";
+import { ToolsType, Tools, SelectedElementType, ExtendedElementType, ElementType, ActionsType } from "./types";
 import { ActionBar, ControlPanel } from "./components";
 
 export default function App() {

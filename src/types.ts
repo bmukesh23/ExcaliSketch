@@ -27,12 +27,21 @@ export type ElementType = {
     text?: string;
 };
 
-export enum Tools {
-    selection = "selection",
-    rectangle = "rectangle",
-    line = "line",
-    pencil = "pencil",
-    text = "text",
+export type ActionsType =
+    | "writing"
+    | "drawing"
+    | "moving"
+    | "panning"
+    | "resizing"
+    | "none";
+
+export const Tools = {
+    selection: "selection",
+    rectangle: "rectangle",
+    line: "line",
+    pencil: "pencil",
+    text: "text",
 }
+
 export type ToolsType = (typeof Tools)[keyof typeof Tools];
 export type Point = { x: number; y: number };
