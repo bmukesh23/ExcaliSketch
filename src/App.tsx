@@ -3,7 +3,7 @@ import rough from 'roughjs';
 import { useHistory } from "./hooks/useHistory";
 import { usePressedKeys } from "./hooks/usePressedKeys";
 import { cursorForPosition, createElement, getElementAtPosition, resizedCoordinates, adjustElementCoordinates, drawElement, adjustmentRequired, } from "./library/utilities";
-import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./library/types";
+import { Tools, SelectedElementType, ExtendedElementType, ElementType } from "./types";
 import { ActionBar, ControlPanel } from "./components";
 
 export default function App() {
@@ -11,7 +11,7 @@ export default function App() {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [startPanMousePosition, setStartPanMousePosition] = useState({ x: 0, y: 0, });
   const [action, setAction] = useState("none");
-  const [tool, setTool] = useState<Tools>(Tools.Text);
+  const [tool, setTool] = useState<Tools>(Tools.Selection);
   const [selectedElement, setSelectedElement] = useState<ElementType | null>();
   const [scale, setScale] = useState(1);
   const [scaleOffset, setScaleOffset] = useState({ x: 0, y: 0 });

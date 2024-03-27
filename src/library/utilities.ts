@@ -1,6 +1,6 @@
 import rough from "roughjs";
 import getStroke from "perfect-freehand";
-import { ElementType, Point, Tools } from "./types";
+import { ElementType, Point, Tools } from "../types";
 
 export const cursorForPosition = (position: string) => {
     switch (position) {
