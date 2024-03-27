@@ -5,5 +5,4 @@ export * from "./cursor-for-position";
 export * from "./draw-element";
 export * from "./get-element-at-position";
 export * from "./near-point";
-export * from "./on-line";
 export * from "./resized-coordinates";
