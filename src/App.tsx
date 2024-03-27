@@ -11,7 +11,7 @@ export default function App() {
   const { elements, setElements, undo, redo } = useHistory([]);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [startPanMousePosition, setStartPanMousePosition] = useState({ x: 0, y: 0, });
-  const [action, setAction] = useState("none");
+  const [action, setAction] = useState<ActionsType>("none");
   const [tool, setTool] = useState<ToolsType>(initialTool);
   const [selectedElement, setSelectedElement] = useState<ElementType | null>();
   const [scale, setScale] = useState(1);
