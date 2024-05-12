@@ -1,6 +1,6 @@
 # 🎨 ExcaliSketch
 
-An Excalidraw clone with React and TypeScript. Rough.js is used for the sketchy, hand-drawn style. This isn't responsive.
+An Excalidraw clone built with React and TypeScript. Rough.js is used for the sketchy, hand-drawn style. This isn't responsive.
 
 ## 📦 Technologies
 
